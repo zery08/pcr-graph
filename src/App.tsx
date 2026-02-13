@@ -75,7 +75,7 @@ function App() {
   const { selectedContext, selectedNode, selectedRows, setSelectedNode, toggleSelectedRow, clearSelections } = useWorkspaceStore()
   const [nodes, , onNodesChange] = useNodesState(graphNodes)
   const [edges, , onEdgesChange] = useEdgesState(graphEdges)
-  const [question, setQuestion] = useState('')
+  const [draftMessage, setDraftMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: 'welcome', role: 'assistant', content: '선택한 그래프/테이블 데이터를 자동으로 포함해서 질문할 수 있습니다.\n\n`markdown`도 지원됩니다.', references: [] },
@@ -95,59 +95,20 @@ function App() {
     return chips
   }, [selectedNode, selectedRows])
 
-  const [question, setQuestion] = useState('')
-  const [isSending, setIsSending] = useState(false)
-  const [isChatOpen, setIsChatOpen] = useState(true)
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content: '선택한 그래프/테이블 데이터를 자동으로 포함해서 질문할 수 있습니다.',
-      references: [],
-    },
-  ])
-
-  const chatViewportRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!chatViewportRef.current || !isChatOpen) {
-      return
-    }
-
-    chatViewportRef.current.scrollTo({
-      top: chatViewportRef.current.scrollHeight,
-      behavior: 'smooth',
-    })
-  }, [messages, isSending, isChatOpen])
-
-  const referenceChips = useMemo(() => {
-    const chips: string[] = []
-
-    if (selectedNode) {
-      chips.push(`노드: ${selectedNode.label}`)
-    }
-
-    selectedRows.forEach((row) => {
-      chips.push(`행: ${row.id}`)
-    })
-
-    return chips
-  }, [selectedNode, selectedRows])
-
   const onNodeClick: NodeMouseHandler = (_, node) => {
     setSelectedNode({ id: node.id, label: String(node.data.label), type: 'node', metadata: { source: 'graph-panel' } })
   }
 
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const trimmed = question.trim()
+    const trimmed = draftMessage.trim()
     if (!trimmed || isSending) return
 
     const userMessage: ChatMessage = { id: `user-${Date.now()}`, role: 'user', content: trimmed, references: referenceChips }
     const nextHistory = [...messages, userMessage]
 
     setMessages(nextHistory)
-    setQuestion('')
+    setDraftMessage('')
     setIsSending(true)
 
     try {
@@ -156,60 +117,6 @@ function App() {
     } catch (error) {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
       setMessages((prev) => [...prev, { id: `assistant-error-${Date.now()}`, role: 'assistant', content: `요청 처리 중 오류가 발생했습니다: ${message}`, references: [] }])
-    } finally {
-      setIsSending(false)
-    }
-  }
-
-  const handleSend = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const trimmed = question.trim()
-    if (!trimmed || isSending) {
-      return
-    }
-
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: trimmed,
-      references: referenceChips,
-    }
-
-    const nextHistory = [...messages, userMessage]
-
-    setMessages(nextHistory)
-    setQuestion('')
-    setIsSending(true)
-
-    try {
-      const response = await sendChatToLlm({
-        context: {
-          node: selectedNode,
-          rows: selectedRows,
-        },
-        history: nextHistory,
-      })
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: response.text,
-          references: [],
-        },
-      ])
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `assistant-error-${Date.now()}`,
-          role: 'assistant',
-          content: `요청 처리 중 오류가 발생했습니다: ${message}`,
-          references: [],
-        },
-      ])
     } finally {
       setIsSending(false)
     }
@@ -313,8 +220,8 @@ function App() {
 
             <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-10">
               <form className="pointer-events-auto relative rounded-2xl border bg-background/95 p-3 shadow-xl backdrop-blur" onSubmit={handleSend}>
-                <textarea className="h-20 w-full resize-none rounded-xl border bg-background p-3 pr-14 text-sm" placeholder="선택한 노드/행을 기반으로 질문을 입력하세요" value={question} onChange={(event) => setQuestion(event.target.value)} />
-                <Button type="submit" size="icon" className="absolute bottom-5 right-5 h-9 w-9 rounded-full" disabled={isSending || !question.trim()} aria-label="질문 전송">
+                <textarea className="h-20 w-full resize-none rounded-xl border bg-background p-3 pr-14 text-sm" placeholder="선택한 노드/행을 기반으로 질문을 입력하세요" value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} />
+                <Button type="submit" size="icon" className="absolute bottom-5 right-5 h-9 w-9 rounded-full" disabled={isSending || !draftMessage.trim()} aria-label="질문 전송">
                   <ArrowUp className="h-4 w-4" />
                 </Button>
               </form>
