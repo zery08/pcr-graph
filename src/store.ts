@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 
-export type GraphNode = {
+export type ContextType = 'node' | 'row'
+
+export type SelectedContext = {
   id: string
   label: string
   type: 'equipment' | 'process' | 'inspection'
@@ -23,61 +25,55 @@ type SelectedContext = {
   rows: ProcessRow[]
 }
 
+export type ProcessRow = {
+  id: string
+  process: string
+  equipment: string
+  status: 'RUNNING' | 'IDLE' | 'MAINTENANCE'
+  prediction: number
+}
+
 type WorkspaceStore = {
-  selectedNode: GraphNode | null
+  selectedContext: SelectedContext | null
+  selectedNode: SelectedContext | null
   selectedRows: ProcessRow[]
-  selectedContext: SelectedContext
-  setSelectedNode: (node: GraphNode | null) => void
+  setSelectedNode: (context: SelectedContext | null) => void
   toggleSelectedRow: (row: ProcessRow) => void
-  clearSelectedRows: () => void
-  clearAllSelections: () => void
+  clearSelections: () => void
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
+  selectedContext: null,
   selectedNode: null,
   selectedRows: [],
-  selectedContext: {
-    node: null,
-    rows: [],
-  },
-  setSelectedNode: (node) =>
-    set((state) => ({
-      selectedNode: node,
-      selectedContext: {
-        ...state.selectedContext,
-        node,
-      },
+  setSelectedNode: (context) =>
+    set(() => ({
+      selectedNode: context,
+      selectedContext: context,
     })),
   toggleSelectedRow: (row) =>
     set((state) => {
-      const exists = state.selectedRows.some((item) => item.id === row.id)
-      const nextRows = exists
-        ? state.selectedRows.filter((item) => item.id !== row.id)
+      const exists = state.selectedRows.some((selected) => selected.id === row.id)
+      const selectedRows = exists
+        ? state.selectedRows.filter((selected) => selected.id !== row.id)
         : [...state.selectedRows, row]
 
       return {
-        selectedRows: nextRows,
-        selectedContext: {
-          ...state.selectedContext,
-          rows: nextRows,
-        },
+        selectedRows,
+        selectedContext: selectedRows.length
+          ? {
+              id: selectedRows.map((selected) => selected.id).join(','),
+              label: `${selectedRows.length}개 공정 데이터 선택`,
+              type: 'row',
+              metadata: { source: 'table-panel' },
+            }
+          : state.selectedNode,
       }
     }),
-  clearSelectedRows: () =>
-    set((state) => ({
-      selectedRows: [],
-      selectedContext: {
-        ...state.selectedContext,
-        rows: [],
-      },
-    })),
-  clearAllSelections: () =>
-    set({
+  clearSelections: () =>
+    set(() => ({
+      selectedContext: null,
       selectedNode: null,
       selectedRows: [],
-      selectedContext: {
-        node: null,
-        rows: [],
-      },
-    }),
+    })),
 }))
