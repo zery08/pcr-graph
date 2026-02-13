@@ -191,7 +191,7 @@ function App() {
 
         <PanelResizeHandle className="w-px bg-border" />
 
-        <Panel defaultSize={34} minSize={24}>
+        <Panel defaultSize={32} minSize={24}>
           <section className="flex h-full flex-col">
             <header className="flex items-center gap-2 border-b p-3 font-semibold">
               <Bot className="h-4 w-4" /> AI Chat
@@ -199,10 +199,10 @@ function App() {
 
             <div className="flex-1 space-y-3 p-4 text-sm">
               <p className="rounded-md border bg-muted/60 p-3">
-                선택된 데이터는 Zustand의 <code>selectedContext</code>로 공유됩니다.
+                Phase 3에서 선택된 컨텍스트가 프롬프트에 자동 주입됩니다.
               </p>
               <pre className="overflow-auto rounded-md border bg-slate-950 p-3 text-xs text-slate-100">
-                {JSON.stringify(selectedContext, null, 2) ?? 'null'}
+                {JSON.stringify(selectedContext, null, 2)}
               </pre>
 
               <div className="rounded-lg border bg-background p-3">

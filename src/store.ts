@@ -5,8 +5,32 @@ export type ContextType = 'node' | 'row'
 export type SelectedContext = {
   id: string
   label: string
-  type: ContextType
-  metadata?: Record<string, string>
+  type: 'equipment' | 'process' | 'inspection'
+  status: 'normal' | 'warning' | 'critical'
+  x: number
+  y: number
+}
+
+export type ProcessRow = {
+  id: string
+  process: string
+  equipment: string
+  temperature: number
+  pressure: number
+  prediction: '정상' | '주의' | '위험'
+}
+
+type SelectedContext = {
+  node: GraphNode | null
+  rows: ProcessRow[]
+}
+
+export type ProcessRow = {
+  id: string
+  process: string
+  equipment: string
+  status: 'RUNNING' | 'IDLE' | 'MAINTENANCE'
+  prediction: number
 }
 
 export type ProcessRow = {
