@@ -98,7 +98,6 @@ async function resolveModelId(openAiApiBase: string): Promise<string> {
 }
 
 export async function sendChatToLlm(params: {
-  question: string
   context: ChatContext
   history: ChatMessage[]
 }): Promise<ChatResponse> {
@@ -115,8 +114,10 @@ export async function sendChatToLlm(params: {
       .filter(Boolean)
       .join(' | ')
 
+    const lastUserQuestion = [...params.history].reverse().find((message) => message.role === 'user')?.content ?? '(없음)'
+
     return {
-      text: `VITE_OPENAI_BASE_URL이 설정되지 않아 데모 응답을 반환합니다.\n질문: ${params.question}\n컨텍스트: ${contextSummary || '없음'}`,
+      text: `VITE_OPENAI_BASE_URL이 설정되지 않아 데모 응답을 반환합니다.\n질문: ${lastUserQuestion}\n컨텍스트: ${contextSummary || '없음'}`,
     }
   }
 
@@ -135,10 +136,6 @@ export async function sendChatToLlm(params: {
           role: message.role,
           content: message.content,
         })),
-        {
-          role: 'user',
-          content: params.question,
-        },
       ],
       temperature: 0.2,
     }),
