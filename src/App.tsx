@@ -125,7 +125,7 @@ function App() {
           node: selectedNode,
           rows: selectedRows,
         },
-        history: [...messages, userMessage],
+        history: messages,
       })
 
       setMessages((prev) => [
