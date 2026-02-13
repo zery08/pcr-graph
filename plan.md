@@ -28,9 +28,9 @@
 - [x] 선택된 데이터를 하단 미니 뷰어로 표시하는 UI 추가
 
 ### Phase 3: AI 상호작용 및 LLM 연동 (2-3주)
-- [ ] OpenAI 또는 자체 호스팅 LLM API와 통신하는 채팅 인터페이스 구축
-- [ ] Context Injection: 선택된 그래프/테이블 데이터를 프롬프트에 자동으로 포함시키는 기능
-- [ ] 채팅창 내에서 데이터 참조(Reference) 칩(Chip) UI 구현
+- [x] OpenAI 또는 자체 호스팅 LLM API와 통신하는 채팅 인터페이스 구축
+- [x] Context Injection: 선택된 그래프/테이블 데이터를 프롬프트에 자동으로 포함시키는 기능
+- [x] 채팅창 내에서 데이터 참조(Reference) 칩(Chip) UI 구현
 
 ### Phase 4: 예측 모델 연동 및 피드백 루프 (3-4주)
 - [ ] BERT 기반 프로세스 데이터 예측 모델 서버(FastAPI) 구축
