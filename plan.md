@@ -18,9 +18,9 @@
 ## 3. 개발 마일스톤 (Milestones)
 
 ### Phase 1: 기반 구조 및 레이아웃 설정 (1-2주)
-- [ ] Vite + React 프로젝트 초기 설정 및 Tailwind/Shadcn UI 도입
-- [ ] react-resizable-panels를 활용한 좌측 워크스페이스 / 우측 채팅창 기본 레이아웃 구현
-- [ ] Zustand를 이용한 전역 데이터 공유(선택된 노드/행 정보) 아키텍처 설계
+- [x] Vite + React 프로젝트 초기 설정 및 Tailwind/Shadcn UI 도입
+- [x] react-resizable-panels를 활용한 좌측 워크스페이스 / 우측 채팅창 기본 레이아웃 구현
+- [x] Zustand를 이용한 전역 데이터 공유(선택된 노드/행 정보) 아키텍처 설계
 
 ### Phase 2: 데이터 워크스페이스 구현 (2-3주)
 - [ ] Graph Panel: React Flow를 활용한 노드-엣지 시각화 및 클릭 이벤트 바인딩
