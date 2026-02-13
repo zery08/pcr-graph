@@ -95,6 +95,45 @@ function App() {
     return chips
   }, [selectedNode, selectedRows])
 
+  const [question, setQuestion] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(true)
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      role: 'assistant',
+      content: '선택한 그래프/테이블 데이터를 자동으로 포함해서 질문할 수 있습니다.',
+      references: [],
+    },
+  ])
+
+  const chatViewportRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!chatViewportRef.current || !isChatOpen) {
+      return
+    }
+
+    chatViewportRef.current.scrollTo({
+      top: chatViewportRef.current.scrollHeight,
+      behavior: 'smooth',
+    })
+  }, [messages, isSending, isChatOpen])
+
+  const referenceChips = useMemo(() => {
+    const chips: string[] = []
+
+    if (selectedNode) {
+      chips.push(`노드: ${selectedNode.label}`)
+    }
+
+    selectedRows.forEach((row) => {
+      chips.push(`행: ${row.id}`)
+    })
+
+    return chips
+  }, [selectedNode, selectedRows])
+
   const onNodeClick: NodeMouseHandler = (_, node) => {
     setSelectedNode({ id: node.id, label: String(node.data.label), type: 'node', metadata: { source: 'graph-panel' } })
   }
@@ -117,6 +156,60 @@ function App() {
     } catch (error) {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
       setMessages((prev) => [...prev, { id: `assistant-error-${Date.now()}`, role: 'assistant', content: `요청 처리 중 오류가 발생했습니다: ${message}`, references: [] }])
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const handleSend = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const trimmed = question.trim()
+    if (!trimmed || isSending) {
+      return
+    }
+
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: trimmed,
+      references: referenceChips,
+    }
+
+    const nextHistory = [...messages, userMessage]
+
+    setMessages(nextHistory)
+    setQuestion('')
+    setIsSending(true)
+
+    try {
+      const response = await sendChatToLlm({
+        context: {
+          node: selectedNode,
+          rows: selectedRows,
+        },
+        history: nextHistory,
+      })
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: response.text,
+          references: [],
+        },
+      ])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `assistant-error-${Date.now()}`,
+          role: 'assistant',
+          content: `요청 처리 중 오류가 발생했습니다: ${message}`,
+          references: [],
+        },
+      ])
     } finally {
       setIsSending(false)
     }
@@ -180,8 +273,13 @@ function App() {
             </Panel>
           </PanelGroup>
         </Panel>
+      </PanelGroup>
 
-        <PanelResizeHandle className="w-px bg-border" />
+      <div className="pointer-events-none fixed bottom-5 right-5 z-30">
+        <Button className="pointer-events-auto rounded-full shadow-xl" onClick={() => setIsChatOpen((prev) => !prev)}>
+          <MessageCircleMore className="mr-2 h-4 w-4" /> {isChatOpen ? '채팅 숨기기' : 'AI 채팅 열기'}
+        </Button>
+      </div>
 
         <Panel defaultSize={34} minSize={26}>
           <section className="relative flex h-full min-h-0 flex-col bg-slate-50/50">
@@ -230,11 +328,45 @@ function App() {
                   <p>선택 행 수: {selectedRows.length}</p>
                   <p>현재 selectedContext: {selectedContext ? selectedContext.label : '없음'}</p>
                 </div>
+              </article>
+            )}
+          </div>
+
+          <form className="space-y-2 border-t bg-background p-3" onSubmit={handleSend}>
+            <textarea
+              className="h-20 w-full resize-none rounded-xl border bg-background p-3 text-sm"
+              placeholder="선택한 노드/행을 기반으로 질문을 입력하세요"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+            />
+            <Button type="submit" className="w-full" disabled={isSending || !question.trim()}>
+              <Send className="mr-2 h-4 w-4" /> {isSending ? '전송 중...' : '질문 전송'}
+            </Button>
+          </form>
+
+          <div className="border-t bg-background p-3">
+            <div className="rounded-lg border bg-background p-3">
+              <p className="mb-2 flex items-center gap-2 font-medium">
+                <Database className="h-4 w-4" /> 미니 뷰어
+              </p>
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <p>선택 노드: {selectedNode?.label ?? '-'}</p>
+                <p>선택 행 수: {selectedRows.length}</p>
+                {!!selectedRows.length && (
+                  <ul className="list-inside list-disc">
+                    {selectedRows.map((row) => (
+                      <li key={row.id}>
+                        {row.id} / {row.process} / {row.status}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p>현재 selectedContext: {selectedContext ? selectedContext.label : '없음'}</p>
               </div>
             </div>
-          </section>
-        </Panel>
-      </PanelGroup>
+          </div>
+        </section>
+      )}
     </main>
   )
 }
