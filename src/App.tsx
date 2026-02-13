@@ -75,6 +75,7 @@ function App() {
   const { selectedContext, selectedNode, selectedRows, setSelectedNode, toggleSelectedRow, clearSelections } = useWorkspaceStore()
   const [nodes, , onNodesChange] = useNodesState(graphNodes)
   const [edges, , onEdgesChange] = useEdgesState(graphEdges)
+  const [isChatOpen, setIsChatOpen] = useState(true)
   const [draftMessage, setDraftMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -188,106 +189,62 @@ function App() {
         </Button>
       </div>
 
-        <Panel defaultSize={34} minSize={26}>
-          <section className="relative flex h-full min-h-0 flex-col bg-slate-50/50">
-            <header className="flex items-center gap-2 border-b bg-background p-3 font-semibold"><Bot className="h-4 w-4" /> AI Chat</header>
-            <div className="border-b bg-background px-4 py-3">
-              <details className="rounded-md border bg-muted/40 p-3 text-xs">
-                <summary className="cursor-pointer font-medium text-foreground">선택 컨텍스트 디버그 보기</summary>
-                <pre className="mt-2 overflow-auto rounded-md bg-slate-950 p-2 text-[11px] text-slate-100">
-{JSON.stringify({ selectedNode, selectedRows, selectedContext }, null, 2)}
-                </pre>
-              </details>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {referenceChips.length ? referenceChips.map((chip) => <span key={chip} className="rounded-full border bg-background px-2 py-1 text-xs">{chip}</span>) : <span className="text-xs text-muted-foreground">참조 데이터 없음</span>}
-              </div>
-            </div>
+      {isChatOpen && (
+        <aside className="fixed bottom-20 right-5 z-30 flex h-[78vh] w-[420px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl">
+          <header className="flex items-center gap-2 border-b bg-background p-3 font-semibold"><Bot className="h-4 w-4" /> AI Chat</header>
 
-        <Panel defaultSize={34} minSize={26}>
-          <section className="relative flex h-full min-h-0 flex-col bg-slate-50/50">
-            <header className="flex items-center gap-2 border-b bg-background p-3 font-semibold"><MessageCircleMore className="h-4 w-4" /> AI Chat</header>
-            <div className="border-b bg-background px-4 py-3">
-              <details className="rounded-md border bg-muted/40 p-3 text-xs">
-                <summary className="cursor-pointer font-medium text-foreground">선택 컨텍스트 디버그 보기</summary>
-                <pre className="mt-2 overflow-auto rounded-md bg-slate-950 p-2 text-[11px] text-slate-100">
-{JSON.stringify({ selectedNode, selectedRows, selectedContext }, null, 2)}
-                </pre>
-              </details>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {referenceChips.length ? referenceChips.map((chip) => <span key={chip} className="rounded-full border bg-background px-2 py-1 text-xs">{chip}</span>) : <span className="text-xs text-muted-foreground">참조 데이터 없음</span>}
-              </div>
+          <div className="border-b bg-background px-4 py-3">
+            <details className="rounded-md border bg-muted/40 p-3 text-xs">
+              <summary className="cursor-pointer font-medium text-foreground">선택 컨텍스트 디버그 보기</summary>
+              <pre className="mt-2 overflow-auto rounded-md bg-slate-950 p-2 text-[11px] text-slate-100">
+                {JSON.stringify({ selectedNode, selectedRows, selectedContext }, null, 2)}
+              </pre>
+            </details>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {referenceChips.length
+                ? referenceChips.map((chip) => <span key={chip} className="rounded-full border bg-background px-2 py-1 text-xs">{chip}</span>)
+                : <span className="text-xs text-muted-foreground">참조 데이터 없음</span>}
             </div>
-
-            <div ref={chatViewportRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 pb-40">
-              {messages.map((message) => {
-                const isUser = message.role === 'user'
-                return (
-                  <article key={message.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[88%] rounded-2xl border px-3 py-2 shadow-sm ${isUser ? 'bg-primary text-primary-foreground' : 'bg-background'}`}>
-                      <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase opacity-80">{isUser ? <User2 className="h-3 w-3" /> : <Bot className="h-3 w-3" />} {message.role}</p>
-                      <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: markdownToHtml(message.content) }} />
-                    </div>
-                  </article>
-                )
-              })}
-              {isSending && <article className="flex justify-start"><div className="max-w-[88%] rounded-2xl border bg-background px-3 py-2 shadow-sm"><p className="text-sm text-muted-foreground">응답 생성 중...</p></div></article>}
-            </div>
-
-            <div className="pointer-events-none absolute bottom-3 left-3 right-3 z-10">
-              <form className="pointer-events-auto relative rounded-2xl border bg-background/95 p-3 shadow-xl backdrop-blur" onSubmit={handleSend}>
-                <textarea className="h-20 w-full resize-none rounded-xl border bg-background p-3 pr-14 text-sm" placeholder="선택한 노드/행을 기반으로 질문을 입력하세요" value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} />
-                <Button type="submit" size="icon" className="absolute bottom-5 right-5 h-9 w-9 rounded-full" disabled={isSending || !draftMessage.trim()} aria-label="질문 전송">
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-              </form>
-            </div>
-
-            <div className="border-t bg-background p-3">
-              <div className="rounded-lg border bg-background p-3">
-                <p className="mb-2 flex items-center gap-2 font-medium"><Database className="h-4 w-4" /> 미니 뷰어</p>
-                <div className="space-y-2 text-xs text-muted-foreground">
-                  <p>선택 노드: {selectedNode?.label ?? '-'}</p>
-                  <p>선택 행 수: {selectedRows.length}</p>
-                  <p>현재 selectedContext: {selectedContext ? selectedContext.label : '없음'}</p>
-                </div>
-              </article>
-            )}
           </div>
 
-          <form className="space-y-2 border-t bg-background p-3" onSubmit={handleSend}>
+          <div ref={chatViewportRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+            {messages.map((message) => {
+              const isUser = message.role === 'user'
+              return (
+                <article key={message.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[88%] rounded-2xl border px-3 py-2 shadow-sm ${isUser ? 'bg-primary text-primary-foreground' : 'bg-background'}`}>
+                    <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase opacity-80">{isUser ? <User2 className="h-3 w-3" /> : <Bot className="h-3 w-3" />} {message.role}</p>
+                    <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: markdownToHtml(message.content) }} />
+                  </div>
+                </article>
+              )
+            })}
+            {isSending && <article className="flex justify-start"><div className="max-w-[88%] rounded-2xl border bg-background px-3 py-2 shadow-sm"><p className="text-sm text-muted-foreground">응답 생성 중...</p></div></article>}
+          </div>
+
+          <form className="relative border-t bg-background p-3" onSubmit={handleSend}>
             <textarea
-              className="h-20 w-full resize-none rounded-xl border bg-background p-3 text-sm"
+              className="h-20 w-full resize-none rounded-xl border bg-background p-3 pr-14 text-sm"
               placeholder="선택한 노드/행을 기반으로 질문을 입력하세요"
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
+              value={draftMessage}
+              onChange={(event) => setDraftMessage(event.target.value)}
             />
-            <Button type="submit" className="w-full" disabled={isSending || !question.trim()}>
-              <Send className="mr-2 h-4 w-4" /> {isSending ? '전송 중...' : '질문 전송'}
+            <Button type="submit" size="sm" className="absolute bottom-5 right-5 h-9 w-9 rounded-full" disabled={isSending || !draftMessage.trim()} aria-label="질문 전송">
+              <ArrowUp className="h-4 w-4" />
             </Button>
           </form>
 
           <div className="border-t bg-background p-3">
             <div className="rounded-lg border bg-background p-3">
-              <p className="mb-2 flex items-center gap-2 font-medium">
-                <Database className="h-4 w-4" /> 미니 뷰어
-              </p>
+              <p className="mb-2 flex items-center gap-2 font-medium"><Database className="h-4 w-4" /> 미니 뷰어</p>
               <div className="space-y-2 text-xs text-muted-foreground">
                 <p>선택 노드: {selectedNode?.label ?? '-'}</p>
                 <p>선택 행 수: {selectedRows.length}</p>
-                {!!selectedRows.length && (
-                  <ul className="list-inside list-disc">
-                    {selectedRows.map((row) => (
-                      <li key={row.id}>
-                        {row.id} / {row.process} / {row.status}
-                      </li>
-                    ))}
-                  </ul>
-                )}
                 <p>현재 selectedContext: {selectedContext ? selectedContext.label : '없음'}</p>
               </div>
             </div>
           </div>
-        </section>
+        </aside>
       )}
     </main>
   )
