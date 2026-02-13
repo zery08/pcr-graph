@@ -5,6 +5,8 @@ import {
   MarkerType,
   MiniMap,
   ReactFlow,
+  useEdgesState,
+  useNodesState,
   type Edge,
   type Node,
   type NodeMouseHandler,
@@ -60,6 +62,8 @@ const columnHelper = createColumnHelper<ProcessRow>()
 function App() {
   const { selectedContext, selectedNode, selectedRows, setSelectedNode, toggleSelectedRow, clearSelections } =
     useWorkspaceStore()
+  const [nodes, , onNodesChange] = useNodesState(graphNodes)
+  const [edges, , onEdgesChange] = useEdgesState(graphEdges)
 
   const onNodeClick: NodeMouseHandler = (_, node) => {
     setSelectedNode({
@@ -123,7 +127,14 @@ function App() {
                   <Network className="h-4 w-4" /> Graph Panel (React Flow)
                 </header>
                 <div className="h-full">
-                  <ReactFlow nodes={graphNodes} edges={graphEdges} fitView onNodeClick={onNodeClick}>
+                  <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    fitView
+                    onNodeClick={onNodeClick}
+                  >
                     <MiniMap />
                     <Controls />
                     <Background gap={24} size={1} />

@@ -33,6 +33,14 @@ export type ProcessRow = {
   prediction: number
 }
 
+export type ProcessRow = {
+  id: string
+  process: string
+  equipment: string
+  status: 'RUNNING' | 'IDLE' | 'MAINTENANCE'
+  prediction: number
+}
+
 type WorkspaceStore = {
   selectedContext: SelectedContext | null
   selectedNode: SelectedContext | null
