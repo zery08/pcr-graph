@@ -1,28 +1,14 @@
 import { create } from 'zustand'
 
-export type ContextType = 'node' | 'row'
+export type ContextSource = 'graph-panel' | 'table-panel'
 
-export type SelectedContext = {
+export type NodeContext = {
   id: string
   label: string
-  type: 'equipment' | 'process' | 'inspection'
-  status: 'normal' | 'warning' | 'critical'
-  x: number
-  y: number
-}
-
-export type ProcessRow = {
-  id: string
-  process: string
-  equipment: string
-  temperature: number
-  pressure: number
-  prediction: '정상' | '주의' | '위험'
-}
-
-type SelectedContext = {
-  node: GraphNode | null
-  rows: ProcessRow[]
+  type: 'node'
+  metadata: {
+    source: ContextSource
+  }
 }
 
 export type ProcessRow = {
@@ -33,19 +19,20 @@ export type ProcessRow = {
   prediction: number
 }
 
-export type ProcessRow = {
+export type SelectedContext = NodeContext | {
   id: string
-  process: string
-  equipment: string
-  status: 'RUNNING' | 'IDLE' | 'MAINTENANCE'
-  prediction: number
+  label: string
+  type: 'row'
+  metadata: {
+    source: ContextSource
+  }
 }
 
 type WorkspaceStore = {
   selectedContext: SelectedContext | null
-  selectedNode: SelectedContext | null
+  selectedNode: NodeContext | null
   selectedRows: ProcessRow[]
-  setSelectedNode: (context: SelectedContext | null) => void
+  setSelectedNode: (context: NodeContext | null) => void
   toggleSelectedRow: (row: ProcessRow) => void
   clearSelections: () => void
 }
