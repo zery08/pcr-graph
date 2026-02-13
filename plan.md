@@ -23,9 +23,9 @@
 - [x] Zustand를 이용한 전역 데이터 공유(선택된 노드/행 정보) 아키텍처 설계
 
 ### Phase 2: 데이터 워크스페이스 구현 (2-3주)
-- [ ] Graph Panel: React Flow를 활용한 노드-엣지 시각화 및 클릭 이벤트 바인딩
-- [ ] Table Panel: TanStack Table을 활용한 프로세스 데이터 리스트업 및 멀티 셀렉트 구현
-- [ ] 선택된 데이터를 하단 미니 뷰어로 표시하는 UI 추가
+- [x] Graph Panel: React Flow를 활용한 노드-엣지 시각화 및 클릭 이벤트 바인딩
+- [x] Table Panel: TanStack Table을 활용한 프로세스 데이터 리스트업 및 멀티 셀렉트 구현
+- [x] 선택된 데이터를 하단 미니 뷰어로 표시하는 UI 추가
 
 ### Phase 3: AI 상호작용 및 LLM 연동 (2-3주)
 - [ ] OpenAI 또는 자체 호스팅 LLM API와 통신하는 채팅 인터페이스 구축
