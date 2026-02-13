@@ -1,22 +1,83 @@
 import { create } from 'zustand'
 
-type ContextType = 'node' | 'row'
-
-type SelectedContext = {
+export type GraphNode = {
   id: string
   label: string
-  type: ContextType
-  metadata?: Record<string, string>
+  type: 'equipment' | 'process' | 'inspection'
+  status: 'normal' | 'warning' | 'critical'
+  x: number
+  y: number
+}
+
+export type ProcessRow = {
+  id: string
+  process: string
+  equipment: string
+  temperature: number
+  pressure: number
+  prediction: '정상' | '주의' | '위험'
+}
+
+type SelectedContext = {
+  node: GraphNode | null
+  rows: ProcessRow[]
 }
 
 type WorkspaceStore = {
-  selectedContext: SelectedContext | null
-  setSelectedContext: (context: SelectedContext) => void
-  clearSelectedContext: () => void
+  selectedNode: GraphNode | null
+  selectedRows: ProcessRow[]
+  selectedContext: SelectedContext
+  setSelectedNode: (node: GraphNode | null) => void
+  toggleSelectedRow: (row: ProcessRow) => void
+  clearSelectedRows: () => void
+  clearAllSelections: () => void
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set) => ({
-  selectedContext: null,
-  setSelectedContext: (context) => set({ selectedContext: context }),
-  clearSelectedContext: () => set({ selectedContext: null }),
+  selectedNode: null,
+  selectedRows: [],
+  selectedContext: {
+    node: null,
+    rows: [],
+  },
+  setSelectedNode: (node) =>
+    set((state) => ({
+      selectedNode: node,
+      selectedContext: {
+        ...state.selectedContext,
+        node,
+      },
+    })),
+  toggleSelectedRow: (row) =>
+    set((state) => {
+      const exists = state.selectedRows.some((item) => item.id === row.id)
+      const nextRows = exists
+        ? state.selectedRows.filter((item) => item.id !== row.id)
+        : [...state.selectedRows, row]
+
+      return {
+        selectedRows: nextRows,
+        selectedContext: {
+          ...state.selectedContext,
+          rows: nextRows,
+        },
+      }
+    }),
+  clearSelectedRows: () =>
+    set((state) => ({
+      selectedRows: [],
+      selectedContext: {
+        ...state.selectedContext,
+        rows: [],
+      },
+    })),
+  clearAllSelections: () =>
+    set({
+      selectedNode: null,
+      selectedRows: [],
+      selectedContext: {
+        node: null,
+        rows: [],
+      },
+    }),
 }))
