@@ -38,6 +38,14 @@ const apiBaseUrl = (import.meta.env.VITE_OPENAI_BASE_URL as string | undefined)?
 const configuredModel = import.meta.env.VITE_OPENAI_MODEL as string | undefined
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined
 
+const openAiApiBaseForClient = () => {
+  if (import.meta.env.DEV && apiBaseUrl) {
+    return '/api/openai'
+  }
+
+  return apiBaseUrl
+}
+
 const buildSystemPrompt = (context: ChatContext) => {
   return [
     '당신은 공정 데이터 분석 도우미입니다.',
@@ -65,16 +73,12 @@ const buildHeaders = () => {
   return headers
 }
 
-async function resolveModelId(): Promise<string> {
-  if (!apiBaseUrl) {
-    return 'demo-model'
-  }
-
+async function resolveModelId(openAiApiBase: string): Promise<string> {
   if (configuredModel) {
     return configuredModel
   }
 
-  const modelsResponse = await fetch(`${apiBaseUrl}/v1/models`, {
+  const modelsResponse = await fetch(`${openAiApiBase}/v1/models`, {
     method: 'GET',
     headers: buildHeaders(),
   })
@@ -98,7 +102,9 @@ export async function sendChatToLlm(params: {
   context: ChatContext
   history: ChatMessage[]
 }): Promise<ChatResponse> {
-  if (!apiBaseUrl) {
+  const openAiApiBase = openAiApiBaseForClient()
+
+  if (!openAiApiBase) {
     const selectedRowsText = params.context.rows
       .map((row) => `${row.id}(${row.process}/${row.status})`)
       .join(', ')
@@ -114,8 +120,8 @@ export async function sendChatToLlm(params: {
     }
   }
 
-  const model = await resolveModelId()
-  const response = await fetch(`${apiBaseUrl}/v1/chat/completions`, {
+  const model = await resolveModelId(openAiApiBase)
+  const response = await fetch(`${openAiApiBase}/v1/chat/completions`, {
     method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({

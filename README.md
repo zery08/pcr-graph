@@ -38,4 +38,6 @@ npm run dev -- --host 0.0.0.0 --port 5173
 - `VITE_OPENAI_BASE_URL`: OpenAI 호환 API 베이스 URL (예: `http://localhost:8000`)
 - `VITE_OPENAI_API_KEY` (선택): Bearer 토큰
 - `VITE_OPENAI_MODEL` (선택): 강제 모델 ID. 미설정 시 `/v1/models`에서 첫 모델 자동 선택
+- 개발 모드(`npm run dev`)에서는 Vite 프록시(`/api/openai`)를 사용해 CORS를 우회합니다.
+  - 따라서 브라우저에서 직접 `http://.../v1/chat/completions`로 호출하지 않고, same-origin 경유로 전송됩니다.
 - 미설정 시 데모 응답을 반환
