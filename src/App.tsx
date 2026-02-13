@@ -12,7 +12,7 @@ import {
   type NodeMouseHandler,
 } from 'reactflow'
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { ArrowUp, Bot, Database, Network, Rows3, User2 } from 'lucide-react'
+import { ArrowUp, Bot, Database, MessageCircleMore, Network, Rows3, User2 } from 'lucide-react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 
 import { sendChatToLlm, type ChatMessage } from '@/lib/chat'
@@ -191,6 +191,21 @@ function App() {
         <Panel defaultSize={34} minSize={26}>
           <section className="relative flex h-full min-h-0 flex-col bg-slate-50/50">
             <header className="flex items-center gap-2 border-b bg-background p-3 font-semibold"><Bot className="h-4 w-4" /> AI Chat</header>
+            <div className="border-b bg-background px-4 py-3">
+              <details className="rounded-md border bg-muted/40 p-3 text-xs">
+                <summary className="cursor-pointer font-medium text-foreground">선택 컨텍스트 디버그 보기</summary>
+                <pre className="mt-2 overflow-auto rounded-md bg-slate-950 p-2 text-[11px] text-slate-100">
+{JSON.stringify({ selectedNode, selectedRows, selectedContext }, null, 2)}
+                </pre>
+              </details>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {referenceChips.length ? referenceChips.map((chip) => <span key={chip} className="rounded-full border bg-background px-2 py-1 text-xs">{chip}</span>) : <span className="text-xs text-muted-foreground">참조 데이터 없음</span>}
+              </div>
+            </div>
+
+        <Panel defaultSize={34} minSize={26}>
+          <section className="relative flex h-full min-h-0 flex-col bg-slate-50/50">
+            <header className="flex items-center gap-2 border-b bg-background p-3 font-semibold"><MessageCircleMore className="h-4 w-4" /> AI Chat</header>
             <div className="border-b bg-background px-4 py-3">
               <details className="rounded-md border bg-muted/40 p-3 text-xs">
                 <summary className="cursor-pointer font-medium text-foreground">선택 컨텍스트 디버그 보기</summary>
